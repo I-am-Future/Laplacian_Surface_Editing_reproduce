@@ -95,7 +95,7 @@ def find_neighbors(mat: np.ndarray, current_id: int) -> list:
 
 
 def pick_points(pcd) -> None:
-    print("")
+    print()
     print(
         "1) Please pick at least three correspondences using [shift + left click]"
     )
@@ -106,7 +106,7 @@ def pick_points(pcd) -> None:
     vis.add_geometry(pcd)
     vis.run()  # user picks points
     vis.destroy_window()
-    print("")
+    print()
     return vis.get_picked_points()
 
 
