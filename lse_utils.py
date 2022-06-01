@@ -1,5 +1,6 @@
 import open3d as o3d
 import numpy as np
+from typing import Tuple
 
 class PointcloudGraph():
     def __init__(self, n: int, pos: np.ndarray) -> None:
@@ -30,7 +31,7 @@ class PointcloudGraph():
         self.pos = self.pos[index, :]
 
     def a_star(self, start: int, end: int) -> list:
-        ''' Find the shortest path from start to end. '''
+        ''' Find a short path from start to end. '''
         from_pos = {}
         op_queue = [] # priority queue [ (nodeid, walk_so_far, expected) ]
         op_queue.append( (start, 0, self.__get_manhattan_dist(start, end)) )
@@ -41,7 +42,6 @@ class PointcloudGraph():
             current_id = current[0]
             has_visited.add(current_id)
             if current_id == end:
-                print('ok')
                 route = []
                 while current_id != start:
                     current_id = from_pos[current_id]
@@ -55,25 +55,25 @@ class PointcloudGraph():
                             new_id], self.__get_manhattan_dist(new_id, end)) )
                     from_pos[new_id] = current_id
 
-    def __get_manhattan_dist(self, node1, node2):
+    def __get_manhattan_dist(self, node1: int, node2: int) -> float:
         ''' Utility function for a_star. '''
         pos1, pos2 = self.pos[node1], self.pos[node2]
-        return np.sum(np.abs(pos1 - pos2))
+        return float(np.sum(np.abs(pos1 - pos2)))
 
-    def __find_neighbors(self, current_id):
+    def __find_neighbors(self, current_id: int) -> list:
         ''' Utility function for a_star. '''
         row = self.adjacency_matrix[current_id]
         return np.where(row==1)[0].tolist()
 
-    def dilate_boundary(self, boundaries: list, step: int):
+    def dilate_boundary(self, boundaries: list, step: int) -> list:
         ''' Dilate the width of the boundary. '''
-        new_pts = set()
+        new_pts = set(boundaries)
         for nodeid in boundaries.copy():
             for pt in self.__find_neighbors(nodeid):
                 new_pts.add(pt)
-        return boundaries + list(new_pts)
+        return list(new_pts)
 
-    def edit_selection(self, boundaries: list, handle: int):
+    def edit_selection(self, boundaries: list, handle: int) -> list:
         ''' Get the edit part of the graph. '''
         queue = [handle]
         visited = set()
@@ -87,7 +87,14 @@ class PointcloudGraph():
         return list(visited)
 
 
-def pick_points(pcd):
+
+def find_neighbors(mat: np.ndarray, current_id: int) -> list:
+    ''' Utility function for a_star. '''
+    row = mat[current_id]
+    return np.where(row==1)[0].tolist()
+
+
+def pick_points(pcd) -> None:
     print("")
     print(
         "1) Please pick at least three correspondences using [shift + left click]"
@@ -103,7 +110,7 @@ def pick_points(pcd):
     return vis.get_picked_points()
 
 
-def display_inlier_outlier(cloud, ind):
+def display_inlier_outlier(cloud, ind: Tuple[list, np.ndarray]) -> None:
     inlier_cloud = cloud.select_by_index(ind)
     outlier_cloud = cloud.select_by_index(ind, invert=True)
 
